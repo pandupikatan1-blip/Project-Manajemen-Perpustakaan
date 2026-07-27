@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold text-dark text-uppercase tracking-wide m-0">Katalog Data Buku</h3>
+    <button type="button" class="btn btn-dark text-uppercase fw-bold btn-sm px-3" data-bs-toggle="modal" data-bs-target="#addModal">Tambah Buku</button>
+</div>
+
+<div class="card card-custom p-4">
+    <div class="table-responsive">
+        <table class="table table-hover table-custom align-middle m-0">
+            <thead>
+                <tr class="text-uppercase small">
+                    <th>ID</th>
+                    <th>Judul Koleksi</th>
+                    <th>Penulis</th>
+                    <th>Penerbit</th>
+                    <th>Tahun</th>
+                    <th>Kategori Klasifikasi</th>
+                    <th class="text-center" width="15%">Manajemen</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in buku %}
+                <tr>
+                    <td>{{ b[0] }}</td>
+                    <td class="fw-bold text-dark">{{ b[1] }}</td>
+                    <td>{{ b[2] }}</td>
+                    <td>{{ b[3] }}</td>
+                    <td><span class="badge bg-secondary font-monospace">{{ b[4] }}</span></td>
+                    <td><span class="badge bg-light text-dark border">{{ b[5] if b[5] else 'N/A' }}</span></td>
+                    <td class="text-center">
+                        <button class="btn btn-outline-secondary btn-action me-1 text-uppercase fw-bold" data-bs-toggle="modal" data-bs-target="#editModal{{ b[0] }}">Ubah</button>
+                        <button class="btn btn-outline-danger btn-action text-uppercase fw-bold" data-bs-toggle="modal" data-bs-target="#deleteModal{{ b[0] }}">Hapus</button>
+                    </td>
+                </tr>
+
+                <!-- MODAL EDIT BUKU -->
+                <div class="modal fade" id="editModal{{ b[0] }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <form action="{{ url_for('buku_edit', id=b[0]) }}" method="POST" class="modal-content">
+                            <div class="modal-header"><h5 class="modal-title fw-bold text-uppercase small">Perbarui Informasi Buku</h5></div>
+                            <div class="modal-body text-start">
+                                <div class="mb-2">
+                                    <label class="form-label small text-muted fw-bold">Judul Buku</label>
+                                    <input type="text" name="judul" class="form-control" value="{{ b[1] }}" required>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label small text-muted fw-bold">Penulis</label>
+                                    <input type="text" name="penulis" class="form-control" value="{{ b[2] }}" required>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label small text-muted fw-bold">Penerbit</label>
+                                    <input type="text" name="penerbit" class="form-control" value="{{ b[3] }}" required>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label small text-muted fw-bold">Tahun Terbit</label>
+                                    <input type="number" name="tahun_terbit" class="form-control" value="{{ b[4] }}" required>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label small text-muted fw-bold">Klasifikasi Kategori</label>
+                                    <select name="id_kategori" class="form-select">
+                                        <option value="">-- Tanpa Kategori --</option>
+                                        {% for cat in kategori_options %}
+                                            <option value="{{ cat[0] }}" {% if cat[0] == b[6] %}selected{% endif %}>{{ cat[1] }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-light text-uppercase fw-bold btn-sm" data-bs-dismiss="modal">Batal</button>
+                                <button type="submit" class="btn btn-dark text-uppercase fw-bold btn-sm">Simpan</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- MODAL DELETE BUKU -->
+                <div class="modal fade" id="deleteModal{{ b[0] }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <form action="{{ url_for('buku_delete', id=b[0]) }}" method="POST" class="modal-content">
+                            <div class="modal-header"><h5 class="modal-title fw-bold text-uppercase text-danger small">Hapus Buku</h5></div>
+                            <div class="modal-body text-start"><p class="m-0">Apakah Anda yakin ingin menghapus buku <strong>{{ b[1] }}</strong>?</p></div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-light text-uppercase fw-bold btn-sm" data-bs-dismiss="modal">Batal</button>
+                                <button type="submit" class="btn btn-danger text-uppercase fw-bold btn-sm">Hapus Permanen</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- MODAL ADD BUKU -->
+<div class="modal fade" id="addModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form action="{{ url_for('buku_add') }}" method="POST" class="modal-content">
+            <div class="modal-header"><h5 class="modal-title fw-bold text-uppercase small">Registrasi Buku Baru</h5></div>
+            <div class="modal-body">
+                <div class="mb-2"><label class="form-label small text-muted fw-bold">Judul Buku</label><input type="text" name="judul" class="form-control" required></div>
+                <div class="mb-2"><label class="form-label small text-muted fw-bold">Penulis</label><input type="text" name="penulis" class="form-control" required></div>
+                <div class="mb-2"><label class="form-label small text-muted fw-bold">Penerbit</label><input type="text" name="penerbit" class="form-control" required></div>
+                <div class="mb-2"><label class="form-label small text-muted fw-bold">Tahun Terbit</label><input type="number" name="tahun_terbit" class="form-control" required></div>
+                <div class="mb-2">
+                    <label class="form-label small text-muted fw-bold">Klasifikasi Kategori</label>
+                    <select name="id_kategori" class="form-select">
+                        <option value="">-- Tanpa Kategori --</option>
+                        {% for cat in kategori_options %}
+                            <option value="{{ cat[0] }}">{{ cat[1] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light text-uppercase fw-bold btn-sm" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-dark text-uppercase fw-bold btn-sm">Daftarkan</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
