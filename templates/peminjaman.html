@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold text-dark text-uppercase tracking-wide m-0">Sirkulasi & Log Denda</h3>
+    <button type="button" class="btn btn-dark text-uppercase fw-bold btn-sm px-3" data-bs-toggle="modal" data-bs-target="#addModal">Buka Log Sirkulasi</button>
+</div>
+
+<div class="card card-custom p-4">
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle m-0">
+            <thead class="table-light">
+                <tr class="text-uppercase small text-secondary">
+                    <th>ID</th>
+                    <th>Nama Peminjam</th>
+                    <th>Judul Koleksi Buku</th>
+                    <th>Tgl Pinjam</th>
+                    <th>Tgl Kembali</th>
+                    <th>Status</th>
+                    <th>Denda Administrasi</th>
+                    <th class="text-center" width="15%">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in peminjaman %}
+                <tr class="{% if p[6] > 0 %}table-danger{% endif %}">
+                    <td>{{ p[0] }}</td>
+                    <td class="fw-bold">{{ p[1] }}</td>
+                    <td>{{ p[2] }}</td>
+                    <td class="font-monospace text-muted small">{{ p[3] }}</td>
+                    <td class="font-monospace text-muted small">{{ p[4] if p[4] else '-' }}</td>
+                    <td>
+                        <span class="badge {% if p[5] == 'Kembali' %}bg-success{% else %}bg-warning text-dark{% endif %} text-uppercase small">
+                            {{ p[5] }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if p[6] > 0 %}
+                            <span class="text-danger fw-bold font-monospace">Rp {{ "{:,}".format(p[6]) }}</span>
+                        {% else %}
+                            <span class="text-muted small">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        <button class="btn btn-outline-secondary btn-action me-1 text-uppercase fw-bold" data-bs-toggle="modal" data-bs-target="#editModal{{ p[0] }}">Ubah</button>
+                        <button class="btn btn-outline-danger btn-action text-uppercase fw-bold" data-bs-toggle="modal" data-bs-target="#deleteModal{{ p[0] }}">Hapus</button>
+                    </td>
+                </tr>
+
+                <!-- MODAL EDIT SIRKULASI -->
+                <div class="modal fade" id="editModal{{ p[0] }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <form action="{{ url_for('peminjaman_edit', id=p[0]) }}" method="POST" class="modal-content">
+                            <div class="modal-header"><h5 class="modal-title fw-bold text-uppercase small">Ubah Entitas Log Transaksi</h5></div>
+                            <div class="modal-body text-start">
+                                <div class="mb-2">
+                                    <label class="form-label small text-muted fw-bold">Nama Anggota</label>
+                                    <select name="id_anggota" class="form-select" required>
+                                        {% for ang in anggota_options %}
+                                            <option value="{{ ang[0] }}" {% if ang[0] == p[7] %}selected{% endif %}>{{ ang[1] }} ({{ ang[2] }})</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label small text-muted fw-bold">Koleksi Buku</label>
+                                    <select name="id_buku" class="form-select" required>
+                                        {% for bk in buku_options %}
+                                            <option value="{{ bk[0] }}" {% if bk[0] == p[8] %}selected{% endif %}>{{ bk[1] }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mb-2"><label class="form-label small text-muted fw-bold">Tanggal Peminjaman</label><input type="date" name="tanggal_pinjam" class="form-control" value="{{ p[3] }}" required></div>
+                                <div class="mb-2"><label class="form-label small text-muted fw-bold">Tanggal Pengembalian</label><input type="date" name="tanggal_kembali" class="form-control" value="{{ p[4] if p[4] else '' }}"></div>
+                                <div class="mb-2">
+                                    <label class="form-label small text-muted fw-bold">Status Sirkulasi</label>
+                                    <select name="status" class="form-select">
+                                        <option value="Dipinjam" {% if p[5] == 'Dipinjam' %}selected{% endif %}>Dipinjam</option>
+                                        <option value="Kembali" {% if p[5] == 'Kembali' %}selected{% endif %}>Kembali</option>
+                                    </select>
+                                </div>
+                                <div class="mb-2"><label class="form-label small text-muted fw-bold">Besaran Sanksi Denda (Rp)</label><input type="number" name="denda" class="form-control" value="{{ p[6] }}" required></div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-light text-uppercase fw-bold btn-sm" data-bs-dismiss="modal">Batal</button>
+                                <button type="submit" class="btn btn-dark text-uppercase fw-bold btn-sm">Simpan</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- MODAL DELETE SIRKULASI -->
+                <div class="modal fade" id="deleteModal{{ p[0] }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <form action="{{ url_for('peminjaman_delete', id=p[0]) }}" method="POST" class="modal-content">
+                            <div class="modal-header"><h5 class="modal-title fw-bold text-uppercase text-danger small">Hapus Log Transaksi</h5></div>
+                            <div class="modal-body text-start"><p class="m-0">Apakah Anda ingin menghapus rekaman transaksi sirkulasi ID #<strong>{{ p[0] }}</strong>?</p></div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-light text-uppercase fw-bold btn-sm" data-bs-dismiss="modal">Batal</button>
+                                <button type="submit" class="btn btn-danger text-uppercase fw-bold btn-sm">Hapus</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- MODAL ADD SIRKULASI -->
+<div class="modal fade" id="addModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form action="{{ url_for('peminjaman_add') }}" method="POST" class="modal-content">
+            <div class="modal-header"><h5 class="modal-title fw-bold text-uppercase small">Buka Log Transaksi Baru</h5></div>
+            <div class="modal-body">
+                <div class="mb-2">
+                    <label class="form-label small text-muted fw-bold">Nama Anggota</label>
+                    <select name="id_anggota" class="form-select" required>
+                        <option value="">-- Pilih Anggota Peminjam --</option>
+                        {% for ang in anggota_options %}
+                            <option value="{{ ang[0] }}">{{ ang[1] }} ({{ ang[2] }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label small text-muted fw-bold">Koleksi Buku</label>
+                    <select name="id_buku" class="form-select" required>
+                        <option value="">-- Pilih Koleksi Buku --</option>
+                        {% for bk in buku_options %}
+                            <option value="{{ bk[0] }}">{{ bk[1] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-2"><label class="form-label small text-muted fw-bold">Tanggal Peminjaman</label><input type="date" name="tanggal_pinjam" class="form-control" required></div>
+                <div class="mb-2"><label class="form-label small text-muted fw-bold">Tanggal Pengembalian (Opsional)</label><input type="date" name="tanggal_kembali" class="form-control"></div>
+                <div class="mb-2">
+                    <label class="form-label small text-muted fw-bold">Status Awal</label>
+                    <select name="status" class="form-select"><option value="Dipinjam">Dipinjam</option><option value="Kembali">Kembali</option></select>
+                </div>
+                <div class="mb-2"><label class="form-label small text-muted fw-bold">Nilai Awal Sanksi Denda (Rp)</label><input type="number" name="denda" class="form-control" value="0" required></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light text-uppercase fw-bold btn-sm" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-dark text-uppercase fw-bold btn-sm">Buka Sirkulasi</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
