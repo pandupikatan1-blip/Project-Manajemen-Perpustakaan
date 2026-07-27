@@ -5,7 +5,7 @@ from functools import wraps
 app = Flask(__name__)
 app.secret_key = 'libhub_executive_secure_key_2026'
 
-DB_URL = "postgresql://postgres:%23Adminlib1234@db.qdxxultnxzwvcmgqxeck.supabase.co:6543/postgres"
+DB_URL = "postgresql://postgres.qdxxultnxzwvcmgqxeck:%23Adminlib1234@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres"
 
 def get_db_connection():
     return psycopg2.connect(DB_URL)
