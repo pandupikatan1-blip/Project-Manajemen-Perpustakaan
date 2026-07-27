@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold text-dark text-uppercase tracking-wide m-0">Administrasi Anggota</h3>
+    <button type="button" class="btn btn-dark text-uppercase fw-bold btn-sm px-3" data-bs-toggle="modal" data-bs-target="#addModal">Registrasi Anggota</button>
+</div>
+
+<div class="card card-custom p-4">
+    <div class="table-responsive">
+        <table class="table table-hover table-custom align-middle m-0">
+            <thead>
+                <tr class="text-uppercase small">
+                    <th>NIM / NIK</th>
+                    <th>Nama Lengkap Anggota</th>
+                    <th>Kontak Email</th>
+                    <th>Status Autentikasi</th>
+                    <th class="text-center" width="15%">Tindakan</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in anggota %}
+                <tr>
+                    <td><code class="text-dark fw-bold font-monospace">{{ a[1] }}</code></td>
+                    <td class="fw-bold">{{ a[2] }}</td>
+                    <td>{{ a[3] }}</td>
+                    <td>
+                        <span class="badge {% if a[4] == 'Aktif' %}bg-success{% else %}bg-secondary{% endif %} text-uppercase">
+                            {{ a[4] }}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <button class="btn btn-outline-secondary btn-action me-1 text-uppercase fw-bold" data-bs-toggle="modal" data-bs-target="#editModal{{ a[0] }}">Ubah</button>
+                        <button class="btn btn-outline-danger btn-action text-uppercase fw-bold" data-bs-toggle="modal" data-bs-target="#deleteModal{{ a[0] }}">Hapus</button>
+                    </td>
+                </tr>
+
+                <!-- MODAL EDIT ANGGOTA -->
+                <div class="modal fade" id="editModal{{ a[0] }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <form action="{{ url_for('anggota_edit', id=a[0]) }}" method="POST" class="modal-content">
+                            <div class="modal-header"><h5 class="modal-title fw-bold text-uppercase small">Ubah Informasi Anggota</h5></div>
+                            <div class="modal-body text-start">
+                                <div class="mb-2"><label class="form-label small text-muted fw-bold">NIM / NIK</label><input type="text" name="nim_nik" class="form-control" value="{{ a[1] }}" required></div>
+                                <div class="mb-2"><label class="form-label small text-muted fw-bold">Nama Lengkap</label><input type="text" name="nama_anggota" class="form-control" value="{{ a[2] }}" required></div>
+                                <div class="mb-2"><label class="form-label small text-muted fw-bold">Email</label><input type="email" name="email" class="form-control" value="{{ a[3] }}" required></div>
+                                <div class="mb-2">
+                                    <label class="form-label small text-muted fw-bold">Status Keanggotaan</label>
+                                    <select name="status" class="form-select">
+                                        <option value="Aktif" {% if a[4] == 'Aktif' %}selected{% endif %}>Aktif</option>
+                                        <option value="Nonaktif" {% if a[4] == 'Nonaktif' %}selected{% endif %}>Nonaktif</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-light text-uppercase fw-bold btn-sm" data-bs-dismiss="modal">Batal</button>
+                                <button type="submit" class="btn btn-dark text-uppercase fw-bold btn-sm">Simpan</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- MODAL DELETE ANGGOTA -->
+                <div class="modal fade" id="deleteModal{{ a[0] }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <form action="{{ url_for('anggota_delete', id=a[0]) }}" method="POST" class="modal-content">
+                            <div class="modal-header"><h5 class="modal-title fw-bold text-uppercase text-danger small">Hapus Anggota</h5></div>
+                            <div class="modal-body text-start"><p class="m-0">Hapus profil keanggotaan atas nama <strong>{{ a[2] }}</strong> secara permanen?</p></div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-light text-uppercase fw-bold btn-sm" data-bs-dismiss="modal">Batal</button>
+                                <button type="submit" class="btn btn-danger text-uppercase fw-bold btn-sm">Hapus</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- MODAL ADD ANGGOTA -->
+<div class="modal fade" id="addModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <form action="{{ url_for('anggota_add') }}" method="POST" class="modal-content">
+            <div class="modal-header"><h5 class="modal-title fw-bold text-uppercase small">Registrasi Anggota Baru</h5></div>
+            <div class="modal-body">
+                <div class="mb-2"><label class="form-label small text-muted fw-bold">NIM / NIK</label><input type="text" name="nim_nik" class="form-control" required></div>
+                <div class="mb-2"><label class="form-label small text-muted fw-bold">Nama Lengkap</label><input type="text" name="nama_anggota" class="form-control" required></div>
+                <div class="mb-2"><label class="form-label small text-muted fw-bold">Email</label><input type="email" name="email" class="form-control" required></div>
+                <div class="mb-2">
+                    <label class="form-label small text-muted fw-bold">Status Awal</label>
+                    <select name="status" class="form-select"><option value="Aktif">Aktif</option><option value="Nonaktif">Nonaktif</option></select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light text-uppercase fw-bold btn-sm" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-dark text-uppercase fw-bold btn-sm">Daftarkan</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
